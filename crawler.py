@@ -20,83 +20,31 @@ def extract_links(content):
     links = set()
     
     for tag in soup.find_all("a", href=True):
-        if tag["href"].startswith("/url?q=http"):
-            tag = tag["href"].replace("/url?q=","")
-            tag = re.sub(r'&sa.*', '', tag)
-            links.add(tag)
+        if tag["href"].startswith("/url?q=http"): # google
+        #if tag["href"].startswith("http") and 'yahoo' not in tag["href"]: #yahoo
+            tag = tag["href"].replace("/url?q=","") # google
+            tag = re.sub(r'&sa.*', '', tag) # google
+            links.add(tag)   
     
     return links
 
-filters = [
-    {'desmatamento', 'amazônia'},
-    {'desmatamento', 'cerrado'},
-    {'desmatamento', 'ipam'},
-    {'desmatamento', 'floresta'},
-    {'floresta', 'amazônia'},
-    {'floresta', 'cerrado'},
-    {'floresta', 'ipam'},
-    {'garimpo', 'amazônia'},
-    {'garimpo', 'cerrado'},
-    {'fogo', 'amazônia'},
-    {'fogo', 'cerrado'},
-    {'fogo', 'unidade de conservação'},
-    {'fogo', 'terra indígena'},
-    {'fogo', 'floresta'},
-    {'fogo', 'área protegida'},
-    {'invação', 'unidade de conservação'},
-    {'invação', 'terra indígena'},
-    {'perda', 'carbono', 'floresta'},
-    {'emissão', 'CO2', 'floresta'},
-    {'emissão', 'CO2', 'desmatamento'},
-    {'estoque', 'carbono', 'floresta'},
-    {'estoque', 'carbono', 'regeneração'},
-    {'map', 'biomas'},
-    {'agricultura', 'familiar', 'amazônia'},
-    {'agricultura', 'familiar', 'cerrado'},
-    {'agricultura', 'familiar', 'mato grosso'},
-    {'agricultura', 'familiar', 'acre'},
-    {'agricultura', 'familiar', 'rondônia'},
-    {'agricultura', 'familiar', 'amazonas'},
-    {'agricultura', 'familiar', 'para'},
-    {'agricultura', 'familiar', 'roraima'},
-    {'agricultura', 'familiar', 'amapá'},
-    {'agricultura', 'familiar', 'acre'},
-    {'extrativismo', 'amazônia'},
-    {'extrativismo', 'cerrado'},
-    {'extração', 'madeira', 'ilegal', 'amazônia'},
-    {'extração', 'madeira', 'ilegal', 'cerrado'},
-    {'conflitos', 'amazônia'},
-    {'conflitos', 'cerrado'},
-    {'pesquisa', 'ipam'},
-    {'pesquisadores', 'ipam'},
-    {'estudo', 'ipam'},
-    {'ipam', 'desenvolve', 'sistema'},
-    {'ipam', 'plataforma'},
-    {'ipam', 'alerta indígena'},
-    {'amazônia', 'seca'},
-    {'cerrado', 'seca'},
-    {'amazônia', 'seca', 'fogo'},
-    {'cerrado', 'seca', 'fogo'},
-    {'amazônia', 'soja', 'desmatamento'},
-    {'cerrado', 'soja', 'desmatamento'},
-]
-
 seen_urls = set()
-for filter in filters:
-    
-    payload = {'q': filter, 'tbm':'nws', 'tbs': 'qdr:d'}
 
-    search = requests.get("https://www.google.com.br/search", params=payload)
-    links = extract_links(search.text)
+filters = ['"desmatamento na amazônia" OR "desmatamento no cerrado" OR "fogo no cerrado" OR "deforestation in the amazon"']
     
-    print search.url
+payload = {'q': filters, 'tbm':'nws', 'tbs': 'qdr:d'} # google
+#payload = {'p': filters, 'flt':'age:1d'} # yahoo
 
-    for link in links:
-        print link
-        if link not in seen_urls:
-            seen_urls.add(link)
-            page = requests.get(link)
-            title = extract_title(page.text)
-            if title:
-                print(title)
-                print link
+search = requests.get("https://www.google.com.br/search", params=payload) # google
+#search = requests.get("https://br.news.search.yahoo.com/search", params=payload) # yahoo
+links = extract_links(search.text)
+
+for link in links:
+    #print link
+    if link not in seen_urls:
+        seen_urls.add(link)
+        page = requests.get(link)
+        title = extract_title(page.text)
+        if title:
+            print(title)
+            print link
